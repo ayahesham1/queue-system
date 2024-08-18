@@ -1,11 +1,14 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Client {
-    
+
     private int id;
     private String firstName;
     private String lastName;
     private int yearOfBirth;
     private Gender gender;
-    private Request[] requests;
+    private List<Request> requests;
     private int arrivalTime;
     private int waitingTime;
     private int timeInQueue;
@@ -13,58 +16,37 @@ public class Client {
     private int departureTime;
     private int patience;
     private static int lastClientId = 0;
-    private String serverName; //additional field to access server name for string
+    private String serverName;
 
-    ///getters and setters
-    
-    public void setRequests(Request[] requests) {
-    this.requests = requests;
-    }
-    
-    public Request[] getRequests(){
-    	return requests;
-    }
-    
-    public void setServerName(String serverName) {
-        this.serverName = serverName;
-    }
-
-    public String getServerName() {
-        return serverName;
-    }
-
-
-    public int getPatience(){
-        return patience;
-    }
-
-    public void setPatience(int patience){
-        this.patience = patience;
-    }
-
-    public int getYearOfBirth(){
-        return yearOfBirth;
-    }
-
-    public void setYearOfbirth(int yearOfBirth) {
+    // Constructors
+    public Client(String firstName, String lastName, int yearOfBirth, Gender gender, int arrivalTime, int patience, List<Request> requests) {
+        this.id = ++lastClientId;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.yearOfBirth = yearOfBirth;
+        this.gender = gender;
+        this.arrivalTime = Math.max(arrivalTime, 0); // Ensure arrival time is non-negative
+        this.patience = patience;
+        this.requests = requests != null ? requests : new ArrayList<>();
+        this.waitingTime = 0;
+        this.timeInQueue = 0;
+        this.serviceTime = 0;
+        this.departureTime = 0;
+        this.serverName = "Unknown";  // Default value
     }
 
-    public int getServiceTime(){
-        return serviceTime;
+    // Overloaded constructors for flexibility
+    public Client(String firstName, String lastName, int yearOfBirth, Gender gender, int patience, List<Request> requests) {
+        this(firstName, lastName, yearOfBirth, gender, 0, patience, requests);
     }
 
-    public void setServiceTime(int serviceTime) {
-        this.serviceTime = serviceTime;
+    public Client(String firstName, String lastName, int yearOfBirth, Gender gender, int patience) {
+        this(firstName, lastName, yearOfBirth, gender, 0, patience, new ArrayList<>());
     }
 
-
-    public int getId(){
+    // Getters and Setters
+    public int getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getFirstName() {
@@ -75,7 +57,7 @@ public class Client {
         this.firstName = firstName;
     }
 
-    public String getLastName(){
+    public String getLastName() {
         return lastName;
     }
 
@@ -83,26 +65,42 @@ public class Client {
         this.lastName = lastName;
     }
 
+    public int getYearOfBirth() {
+        return yearOfBirth;
+    }
 
+    public void setYearOfBirth(int yearOfBirth) {
+        this.yearOfBirth = yearOfBirth;
+    }
 
-    public void setArrivalTime(int arrivalTime) {
-        if (arrivalTime > 0) {
-            this.arrivalTime = arrivalTime;
-        }
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    public List<Request> getRequests() {
+        return requests;
+    }
+
+    public void setRequests(List<Request> requests) {
+        this.requests = requests != null ? requests : new ArrayList<>();
     }
 
     public int getArrivalTime() {
         return arrivalTime;
     }
 
-    public void setDepartureTime(int departureTime) {
-        if (departureTime == 0 || departureTime >= (arrivalTime+waitingTime+timeInQueue)){
-           this.departureTime= departureTime;
+    public void setArrivalTime(int arrivalTime) {
+        if (arrivalTime >= 0) {
+            this.arrivalTime = arrivalTime;
         }
     }
-    
-    public int getDepartureTime(){
-        return departureTime;
+
+    public int getWaitingTime() {
+        return waitingTime;
     }
 
     public void setWaitingTime(int waitingTime) {
@@ -111,8 +109,8 @@ public class Client {
         }
     }
 
-    public int getWaitingTime() {
-        return waitingTime;
+    public int getTimeInQueue() {
+        return timeInQueue;
     }
 
     public void setTimeInQueue(int timeInQueue) {
@@ -121,92 +119,63 @@ public class Client {
         }
     }
 
-    public int getTimeInQueue() {
-        return timeInQueue;
+    public int getServiceTime() {
+        return serviceTime;
     }
 
+    public void setServiceTime(int serviceTime) {
+        this.serviceTime = serviceTime;
+    }
 
+    public int getDepartureTime() {
+        return departureTime;
+    }
 
-    public Client(String firstName, String lastName, int yearOfBirth, Gender gender,
-        int arrivalTime, int patience, Request[] requests) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.yearOfBirth = yearOfBirth;
-    this.gender = gender;
-    this.arrivalTime = (arrivalTime > 0) ? arrivalTime : 1; 
-    this.id = lastClientId++;
-    this.waitingTime = 0;
-    this.timeInQueue = 0;
-    this.serviceTime = 0;
-    this.departureTime = 0;
-    this.requests = requests;
-}
+    public void setDepartureTime(int departureTime) {
+        if (departureTime >= arrivalTime + waitingTime + timeInQueue) {
+            this.departureTime = departureTime;
+        }
+    }
 
-public Client(String firstName, String lastName, int yearOfBirth, Gender gender,
-        int patience, Request[] requests) {
-    this(firstName, lastName, yearOfBirth, gender, 0, patience, requests);
-}
+    public int getPatience() {
+        return patience;
+    }
 
-public Client(String firstName, String lastName, int yearOfBirth, Gender gender,
-        int patience) {
-    this(firstName, lastName, yearOfBirth, gender, 0, patience, new Request[0]); 
-}
+    public void setPatience(int patience) {
+        this.patience = patience;
+    }
 
+    public String getServerName() {
+        return serverName;
+    }
 
-    public int estimateServiceLevel(){
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
+    }
+
+    // Method to estimate service level based on waiting time and queue time
+    public int estimateServiceLevel() {
         int serviceLevel = 10;
+        int[] thresholds = {4, 6, 8, 10, 12};
 
-        
-        if (waitingTime > 4) {
-            serviceLevel -= 1;
+        for (int threshold : thresholds) {
+            if (waitingTime > threshold) {
+                serviceLevel--;
+            }
+            if (timeInQueue > threshold) {
+                serviceLevel--;
+            }
         }
-        if (waitingTime > 6) {
-            serviceLevel -= 1;
-        }
-        if (waitingTime > 8) {
-            serviceLevel -= 1;
-        }
-        if (waitingTime > 10) {
-            serviceLevel -= 1;
-        }
-        if (waitingTime > 12) {
-            serviceLevel -= 1;
-        }
-        if (timeInQueue > 4) {
-            serviceLevel -= 1;
-        }
-        if (timeInQueue > 6) {
-            serviceLevel -= 1;
-        }
-        if (timeInQueue > 8) {
-            serviceLevel -= 1;
-        }
-        if (timeInQueue > 10) {
-            serviceLevel -= 1;
-        }
-        if (timeInQueue > 12) {
-            serviceLevel -= 1;
-        }
-
-        return serviceLevel;
-
-
+        return Math.max(serviceLevel, 0);
     }
 
+    // toString method for displaying client information
+    @Override
     public String toString() {
-        String finalResponse = "";
-
-        finalResponse += "Client " + lastName + ", " + firstName + "\n";
-        finalResponse += "** Arrival Time : " + arrivalTime + "\n";
-        finalResponse += "** Waiting Time : " + waitingTime + "\n";
-        finalResponse += "** Time in Queue : " + timeInQueue + "\n";
-        finalResponse += "** Service Time : " + serviceTime + "\n";
-        finalResponse += "** Departure Time : " + departureTime + "\n";
-        finalResponse += "** Served By Server : " + serverName + "\n";
-        finalResponse += "** Service Level : " + estimateServiceLevel() + "\n";
-        //come back and put in server name
-
-        return finalResponse;
+        return String.format(
+            "Client %s, %s\n** Arrival Time: %d\n** Waiting Time: %d\n** Time in Queue: %d\n" +
+            "** Service Time: %d\n** Departure Time: %d\n** Served By Server: %s\n** Service Level: %d\n",
+            lastName, firstName, arrivalTime, waitingTime, timeInQueue, serviceTime, departureTime, serverName, estimateServiceLevel()
+        );
     }
-
 }
