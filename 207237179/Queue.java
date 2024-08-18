@@ -1,124 +1,141 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Queue {
     private String serverName;
     private int queueSize;
     private Client clientBeingServed;
     private Request requestInProgress;
     private int processingStartTime;
-    private Client[] clientsHistory;
-    private Client[] clientsInQueue;
+    private List<Client> clientsHistory;
+    private List<Client> clientsInQueue;
 
-    public Queue (String serverName, int queueSize) {
+    public Queue(String serverName, int queueSize) {
         this.serverName = serverName;
         this.queueSize = queueSize;
-        this.clientsHistory = new Client[queueSize];
-        this.clientsInQueue = new Client[queueSize];
+        this.clientsHistory = new ArrayList<>();
+        this.clientsInQueue = new ArrayList<>();
     }
 
-    public void setServerName(String serverName){
+    // Getter and Setter for serverName
+    public String getServerName() {
+        return serverName;
+    }
+
+    public void setServerName(String serverName) {
         this.serverName = serverName;
     }
 
-    public String getServerName(){
-        return serverName;
+    // Getter and Setter for queueSize
+    public int getQueueSize() {
+        return queueSize;
     }
 
     public void setQueueSize(int queueSize) {
         this.queueSize = queueSize;
     }
 
-    public int getQueueSize(){
-        return queueSize;
-    }
-
-    public void setClientBeingServed(Client clientBeingServed){
-        this.clientBeingServed = clientBeingServed;
-    }
-
+    // Getter and Setter for clientBeingServed
     public Client getClientBeingServed() {
         return clientBeingServed;
     }
 
-    public void setRequestInProgress( Request requestInProgress) {
+    public void setClientBeingServed(Client clientBeingServed) {
+        this.clientBeingServed = clientBeingServed;
+    }
+
+    // Getter and Setter for requestInProgress
+    public Request getRequestInProgress() {
+        return requestInProgress;
+    }
+
+    public void setRequestInProgress(Request requestInProgress) {
         this.requestInProgress = requestInProgress;
     }
 
-    public Request getRequestInProgress(){
-        return requestInProgress;
+    // Getter and Setter for processingStartTime
+    public int getProcessingStartTime() {
+        return processingStartTime;
     }
 
     public void setProcessingStartTime(int processingStartTime) {
         this.processingStartTime = processingStartTime;
     }
 
-    public int getProcessingStartTime(){
-        return processingStartTime;
+    // Methods for managing clients in queue
+    public void addClientToQueue(Client client) {
+        if (clientsInQueue.size() < queueSize) {
+            clientsInQueue.add(client);
+        } else {
+            System.out.println("Queue is full!");
+        }
     }
 
-    public void setClientsHistory(Client[] clientsHistory){
-        this.clientsHistory = clientsHistory;
+    public void removeClientFromQueue(Client client) {
+        clientsInQueue.remove(client);
     }
 
-    public Client[] getClientsHistory(){
-        return clientsHistory;
-    }
-
-    public void setClientsInQueue(Client[] clientsInQueue) {
-        this.clientsInQueue = clientsInQueue;
-    }
-
-    public Client[] getClientsInQueue(){
+    public List<Client> getClientsInQueue() {
         return clientsInQueue;
     }
 
-    public String toString(){
-        ///[Queue:1][09]-----[13][21][12][08][03]
-        String queueRepString = "[Queue:" + serverName + "]";
-        queueRepString += "[" + clientBeingServed.getId() + "]";
-        queueRepString += "-----";
-        
-        for (Client client : clientsInQueue) {
-        	if (client != null) {
-        		queueRepString += "[" + client.getId() + "]";
-        	}
-        }
-        
-        return queueRepString;
+    // Methods for managing clients history
+    public void addClientToHistory(Client client) {
+        clientsHistory.add(client);
     }
 
+    public List<Client> getClientsHistory() {
+        return clientsHistory;
+    }
+
+    // toString method for general queue display
+    @Override
+    public String toString() {
+        StringBuilder queueRepString = new StringBuilder("[Queue:" + serverName + "]");
+        if (clientBeingServed != null) {
+            queueRepString.append("[").append(clientBeingServed.getId()).append("]");
+        } else {
+            queueRepString.append("[None]");
+        }
+        queueRepString.append("-----");
+
+        for (Client client : clientsInQueue) {
+            queueRepString.append("[").append(client.getId()).append("]");
+        }
+        return queueRepString.toString();
+    }
+
+    // toString with optional showing of client IDs or remaining times
     public String toString(boolean showID) {
-    	String showIdStr = "[Queue:" + serverName + "]";
-    	if (showID == true) {
-    		showIdStr += "-----";
-    		for (Client client : clientsInQueue) {
-    			if (client != null) {
-    				showIdStr += "[" + client.getId() + "]";
-    			}
-    		}	
-    	}
-    	else {
-            showIdStr += "-----";
-            if (clientBeingServed != null) {
-                int remainingTime = 0;
-        
-                if (clientBeingServed.getDepartureTime() > 0) {
-                    remainingTime = clientBeingServed.getArrivalTime() - clientBeingServed.getDepartureTime();
-                }
-                showIdStr += "[" + String.format("%02d", remainingTime) + "]";
+        StringBuilder queueRepString = new StringBuilder("[Queue:" + serverName + "]");
+        if (showID) {
+            queueRepString.append("-----");
+            for (Client client : clientsInQueue) {
+                queueRepString.append("[").append(client.getId()).append("]");
             }
+        } else {
+            queueRepString.append("-----");
+            if (clientBeingServed != null) {
+                int remainingTime = calculateRemainingTime(clientBeingServed);
+                queueRepString.append("[").append(String.format("%02d", remainingTime)).append("]");
+            }
+
             for (Client client : clientsInQueue) {
                 if (client != null) {
-                    Request clientRequest = getRequestInProgress(); 
-                    if (clientRequest != null) {
-                        int estimatedTime = clientRequest.calculateProcessingTime();
-                        showIdStr += "[" + String.format("%02d", estimatedTime) + "]";
-                    }
+                    int estimatedTime = requestInProgress != null
+                            ? requestInProgress.calculateProcessingTime()
+                            : 0;
+                    queueRepString.append("[").append(String.format("%02d", estimatedTime)).append("]");
                 }
             }
         }
-        
-        ///[Queue:1][01]-----[07][13][19][25][31]
-        return showIdStr;
+        return queueRepString.toString();
     }
 
-
+    private int calculateRemainingTime(Client client) {
+        if (client.getDepartureTime() > 0) {
+            return client.getDepartureTime() - client.getArrivalTime();
+        }
+        return 0;
+    }
 }
